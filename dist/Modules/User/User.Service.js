@@ -31,11 +31,6 @@ class UserService {
             ContentType: BodyData.ContentType,
             path: `User/${User._id}/ProfilePics`,
         });
-        if (User.ProfilePic) {
-            await this._S3BucketService.DeleteFile(User.ProfilePic);
-        }
-        User.ProfilePic = Key;
-        await User.save();
         return { Key, URL };
     }
     async UploadCoverPic(files, User) {

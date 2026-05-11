@@ -45,12 +45,15 @@ class UserService {
         ContentType: BodyData.ContentType,
         path: `User/${User._id}/ProfilePics`,
       },
-    );
+    ); /*
+    stopped code because we made lambda function that will update if link used to upload
     if (User.ProfilePic) {
       await this._S3BucketService.DeleteFile(User.ProfilePic);
     }
     User.ProfilePic = Key;
     await User.save();
+   
+    */
     return { Key, URL };
   }
   public async UploadCoverPic(files: Express.Multer.File[], User: IHUser) {

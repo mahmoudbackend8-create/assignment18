@@ -3,10 +3,12 @@ import { BadRequestExeption } from "../Common/Exeptions/DomainExeption.js";
 import { regex, z, type ZodType } from "zod";
 import { UserGender } from "../Common/Enums/User.Enums.js";
 import { error } from "console";
+import { fa } from "zod/locales";
 
 type KeyReqType = keyof Request; //=>body |params|file|..........
 export function validation(
   ValidationScema: Partial<Record<KeyReqType, ZodType>>,
+  FileInBody = false,
 ) {
   return (req: Request, res: Response, next: NextFunction) => {
     const ValidationErrs: { path: PropertyKey[]; message: string }[] = [];
@@ -27,6 +29,9 @@ export function validation(
       //   if (ValidationScema[Key] == undefined) {
       //     continue;
       //   }
+      if (Key == "body" && FileInBody == false) {
+        req.body.files = req.files;
+      }
       const ValidationResult = ValidationScema[Key]!.safeParse(req[Key]);
       if (!ValidationResult.success) {
         // ValidationErrs.push(

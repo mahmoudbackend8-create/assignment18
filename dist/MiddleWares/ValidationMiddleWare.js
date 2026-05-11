@@ -2,10 +2,14 @@ import { BadRequestExeption } from "../Common/Exeptions/DomainExeption.js";
 import { regex, z } from "zod";
 import { UserGender } from "../Common/Enums/User.Enums.js";
 import { error } from "console";
-export function validation(ValidationScema) {
+import { fa } from "zod/locales";
+export function validation(ValidationScema, FileInBody = false) {
     return (req, res, next) => {
         const ValidationErrs = [];
         for (const Key of Object.keys(ValidationScema)) {
+            if (Key == "body" && FileInBody == false) {
+                req.body.files = req.files;
+            }
             const ValidationResult = ValidationScema[Key].safeParse(req[Key]);
             if (!ValidationResult.success) {
                 ValidationErrs.push(...ValidationResult.error.issues.map((ele) => {

@@ -11,6 +11,7 @@ import S3BucketService from "./Common/S3Bucket/S3BucketService.js";
 import { pipeline } from "node:stream";
 import { promisify } from "node:util";
 import SuccessResponse from "./Common/Response/SuccessResponse.js";
+import PostRouter from "./Modules/Post/Post.Controller.js";
 async function AppBoostrab() {
     const PORT = Server_PORT;
     const App = express();
@@ -19,6 +20,7 @@ async function AppBoostrab() {
     await TestConnectionRedis();
     App.use("/Auth", AuthRouter);
     App.use("/User", UserRouter);
+    App.use("/Post", PostRouter);
     App.get("/uploads/*path", async (req, res, next) => {
         const { path } = req.params;
         const { fileName, downLoad } = req.query;
@@ -43,6 +45,9 @@ async function AppBoostrab() {
     });
     App.get("/", (req, res, next) => {
         res.status(200).send("Landing Page");
+    });
+    App.post("/sendNotification", async (req, res) => {
+        return res.json({ body: req.body });
     });
     App.get("/*dummy", (req, res, next) => {
         res.status(404).json({ Msg: "Invalid Url Or Method" });

@@ -51,5 +51,14 @@ class RedisServices {
     getOTPKeyBlocked({ Email, emailType, }) {
         return `OTP::${Email}::${emailType}::BLOCKED`;
     }
+    FCMKey(UserId) {
+        return `FCM::${UserId}`;
+    }
+    async AddFCMTokenToSet({ UserId, FcmToken, }) {
+        return await Client.sAdd(this.FCMKey(UserId), FcmToken);
+    }
+    async GetMemberFCMTokens(UserId) {
+        return await Client.sMembers(this.FCMKey(UserId));
+    }
 }
 export default new RedisServices();

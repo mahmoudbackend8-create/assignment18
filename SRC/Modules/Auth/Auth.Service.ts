@@ -23,11 +23,13 @@ import RedisServices from "../../DB/Redis/Redis.Service.js";
 import { OAuth2Client } from "google-auth-library";
 import { GOOGLE_CLIENT_ID } from "../../Config/Config.service.js";
 import { UserProvider } from "../../Common/Enums/User.Enums.js";
+import NotificationsService from "../../Common/Notifications/NotificationsService.js";
 class AuthService {
   private _EmailService = EmailService;
   private _UserDbRepo = UserRepo;
   private _TokenService = TokenService;
   private _RedisServices = RedisServices;
+  private _NotificationService = NotificationsService;
   public async SignUp(bodyData: signUpDTO): Promise<IHUser> {
     const { Email } = bodyData;
     const EmailExist = await this._UserDbRepo.findOne({
@@ -36,7 +38,7 @@ class AuthService {
     if (EmailExist) {
       throw new ConflictExeption("Email Already Exist");
     }
-  
+
     const [User] = await this._UserDbRepo.Create({ data: [bodyData] });
     await this._EmailService.SendEmailOTP({
       Email,
@@ -64,6 +66,17 @@ class AuthService {
     });
     if (!PassComparing) {
       throw new BadRequestExeption("Invalid Password");
+    }
+    if (bodyData.FCM) {
+      await this._RedisServices.AddFCMTokenToSet({
+        UserId: user._id,
+        FcmToken: bodyData.FCM,
+      });
+      const FCMTokens = await this._RedisServices.GetMemberFCMTokens(user._id);
+       await this._NotificationService.SendNotifications({
+        tokens: FCMTokens,
+        data: { body: "New LoggIn", title: `Logged IN At ${new Date()}` },
+      });
     }
     return this._TokenService.GetAccesAndRefreshToken(user);
   }

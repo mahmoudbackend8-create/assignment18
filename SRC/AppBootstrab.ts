@@ -12,6 +12,7 @@ import S3BucketService from "./Common/S3Bucket/S3BucketService.js";
 import { pipeline } from "node:stream";
 import { promisify } from "node:util";
 import SuccessResponse from "./Common/Response/SuccessResponse.js";
+import PostRouter from "./Modules/Post/Post.Controller.js";
 async function AppBoostrab() {
   const PORT = Server_PORT;
   const App: express.Express = express();
@@ -48,6 +49,7 @@ async function AppBoostrab() {
   //and we use this .modifies in user model-Pre to avoid this
   App.use("/Auth", AuthRouter);
   App.use("/User", UserRouter);
+  App.use("/Post", PostRouter);
 
   App.get("/uploads/*path", async (req, res, next) => {
     // console.log(req.params.path);
@@ -86,8 +88,8 @@ async function AppBoostrab() {
     const Key = path.join("/");
     const result = await S3BucketService.CreatePreSignedGetFile({
       Key,
-      downLoad: (downLoad as string) ,
-      fileName: fileName as string || (path[path.length - 1] as string),
+      downLoad: downLoad as string,
+      fileName: (fileName as string) || (path[path.length - 1] as string),
     });
 
     return SuccessResponse({ res, Msg: "Done", data: result });
@@ -124,6 +126,9 @@ async function AppBoostrab() {
       res.status(200).send("Landing Page");
     },
   );
+  App.post("/sendNotification", async (req, res) => {
+    return res.json({ body: req.body });
+  });
   App.get(
     "/*dummy",
     (

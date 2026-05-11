@@ -1,3 +1,4 @@
+import type { Types } from "mongoose";
 import type { EmailTypeEnum } from "../../Common/Enums/EmailEnums.js";
 import { Client } from "../Redis/Redis.Connection.js";
 class RedisServices {
@@ -78,6 +79,22 @@ class RedisServices {
     emailType: EmailTypeEnum;
   }) {
     return `OTP::${Email}::${emailType}::BLOCKED`;
+  }
+
+  FCMKey(UserId: Types.ObjectId | string) {
+    return `FCM::${UserId}`;
+  }
+  async AddFCMTokenToSet({
+    UserId,
+    FcmToken,
+  }: {
+    UserId: Types.ObjectId | string;
+    FcmToken: string;
+  }) {
+    return await Client.sAdd(this.FCMKey(UserId), FcmToken);
+  }
+  async GetMemberFCMTokens(UserId: Types.ObjectId | string) {
+    return await Client.sMembers(this.FCMKey(UserId));
   }
 }
 
