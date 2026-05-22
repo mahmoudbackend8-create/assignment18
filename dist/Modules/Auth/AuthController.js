@@ -13,7 +13,7 @@ AuthRouter.post("/SignUp", validation(SignUpSchema), async (req, res) => {
     const result = await AuthService.SignUp(req.body);
     return SuccessResponse({ res, Msg: "SignUp", data: result });
 });
-AuthRouter.post("/LogIn", validation(LoginSchema), async (req, res) => {
+AuthRouter.post("/LogIn", async (req, res) => {
     const result = await AuthService.Login(req.body);
     return SuccessResponse({
         res,

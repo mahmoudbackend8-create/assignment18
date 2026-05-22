@@ -1,4 +1,4 @@
-import mongoose, {} from "mongoose";
+import mongoose, { Types } from "mongoose";
 import { UserGender, UserProvider, UserRole, } from "../../Common/Enums/User.Enums.js";
 import { Hashing } from "../../Common/Security/Hashing.js";
 import { bcrypting } from "../../Common/Security/Bcrypting.js";
@@ -27,6 +27,7 @@ const UserSchema = new mongoose.Schema({
         enum: UserRole,
         default: UserRole.User,
     },
+    Friends: [{ type: Types.ObjectId, ref: "User" }],
     ProfilePic: String,
     CoverPics: [String],
     ChangeCreditTime: Date,

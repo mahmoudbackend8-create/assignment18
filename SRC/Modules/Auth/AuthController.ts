@@ -41,7 +41,7 @@ AuthRouter.post("/SignUp", validation(SignUpSchema), async (req, res) => {
 });
 AuthRouter.post(
   "/LogIn",
-  validation(LoginSchema),
+  // validation(LoginSchema),
   async (req: Request, res: Response) => {
     const result = await AuthService.Login(req.body);
     return SuccessResponse<{ AccessToken: string; RefreshToken: string }>({

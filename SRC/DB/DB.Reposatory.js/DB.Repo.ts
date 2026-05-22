@@ -31,6 +31,17 @@ abstract class DBRepo<T> {
   }) {
     return await this.Model.updateOne(filter, update, options);
   }
+  public async findOneAndUpdate({
+    filter,
+    update,
+    options,
+  }: {
+    filter?: QueryFilter<T>;
+    update?: UpdateQuery<T>;
+    options?: QueryOptions<T>;
+  }) {
+    return await this.Model.findOneAndUpdate(filter, update, options);
+  }
   public async findOne({
     filter,
     projection,
@@ -63,6 +74,34 @@ abstract class DBRepo<T> {
     options?: QueryOptions<T>;
   }) {
     return await this.Model.findById(id, projection, options);
+  }
+  getDBDoc(data: T) {
+    return new this.Model(data);
+  }
+
+  async Paginate({
+    filter,
+    projection,
+    options,
+    Page = 1,
+    Limit = 3,
+  }: {
+    filter?: QueryFilter<T>;
+    projection?: ProjectionType<T> | null | undefined;
+    options?: QueryOptions<T>;
+    Page?: number;
+    Limit?: number;
+  }) {
+    const Skip = (Page - 1) * Limit;
+    const Docs = await this.Model.find({ filter, options, projection })
+      .skip(Skip)
+      .limit(Limit);
+    const TotalDocs = await this.Model.countDocuments(filter);
+    return { Docs, TotalDocs, Page, TotalPages: Math.ceil(TotalDocs / Limit) };
+  }
+
+  async saveDBDoc(){
+    
   }
 }
 export default DBRepo;

@@ -1,5 +1,15 @@
+import { GraphQLError } from "graphql";
 import CustomError from "./CustomError.js";
 
+export function MapGQLError(err: CustomError) {
+  throw new GraphQLError(err.message || "internal Server Error", {
+    extensions: {
+      statusCode: err.statusCode || 500,
+      Stack: err.stack,
+      Cause: err.cause,
+    },
+  });
+}
 export class BadRequestExeption extends CustomError {
   constructor(message: string = "Bad Request", cause?: unknown) {
     super(message, 400, cause);

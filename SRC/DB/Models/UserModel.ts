@@ -1,4 +1,4 @@
-import mongoose, { type HydratedDocument } from "mongoose";
+import mongoose, { Types, type HydratedDocument } from "mongoose";
 import {
   UserGender,
   UserProvider,
@@ -17,6 +17,7 @@ export interface IUser {
   Age: number;
   Provider: UserProvider;
   Role: UserRole;
+  Friends?: Types.ObjectId[];
   ProfilePic: string;
   CoverPics: string[];
   ChangeCreditTime: Date;
@@ -50,6 +51,7 @@ const UserSchema = new mongoose.Schema<IUser>(
       enum: UserRole,
       default: UserRole.User,
     },
+    Friends:[{type:Types.ObjectId,ref:"User"}],
     ProfilePic: String,
     CoverPics: [String],
     ChangeCreditTime: Date,

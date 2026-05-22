@@ -13,6 +13,27 @@ import { pipeline } from "node:stream";
 import { promisify } from "node:util";
 import SuccessResponse from "./Common/Response/SuccessResponse.js";
 import PostRouter from "./Modules/Post/Post.Controller.js";
+import CommentRouter from "./Modules/Comment/Comment.Controller.js";
+import {
+  GraphQLBoolean,
+  GraphQLEnumType,
+  GraphQLID,
+  GraphQLInt,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLSchema,
+  GraphQLString,
+} from "graphql";
+import { createHandler } from "graphql-http/lib/use/express";
+import {
+  UserGender,
+  UserProvider,
+  UserRole,
+} from "./Common/Enums/User.Enums.js";
+import UserDbrepo from "./DB/DB.Reposatory.js/User.Dbrepo.js";
+import schema from "./Modules/gql/schema.gql.js";
+import { authentication } from "./MiddleWares/AuthenticationMiddelWare.js";
 async function AppBoostrab() {
   const PORT = Server_PORT;
   const App: express.Express = express();
@@ -50,6 +71,7 @@ async function AppBoostrab() {
   App.use("/Auth", AuthRouter);
   App.use("/User", UserRouter);
   App.use("/Post", PostRouter);
+  App.use("/Comment", CommentRouter);
 
   App.get("/uploads/*path", async (req, res, next) => {
     // console.log(req.params.path);
@@ -128,7 +150,87 @@ async function AppBoostrab() {
   );
   App.post("/sendNotification", async (req, res) => {
     return res.json({ body: req.body });
-  });
+  }); //#graphql
+
+  // const schema = new GraphQLSchema({
+  //   query: new GraphQLObjectType({
+  //     name: "query1",
+  //     fields: {
+  //       GetUserProfile: {
+  //         type: new GraphQLObjectType({
+  //           name: "UserType",
+  //           fields: {
+  //             _id: { type: new GraphQLNonNull(GraphQLID) },
+  //             UserName: { type: GraphQLString },
+  //             Password: { type: GraphQLString },
+  //             Email: { type: GraphQLString },
+  //             Gender: {
+  //               type: new GraphQLEnumType({
+  //                 name: "UserGender",
+  //                 values: {
+  //                   Female: { value: UserGender.Female },
+  //                   Male: { value: UserGender.Male },
+  //                 },
+  //               }),
+  //             },
+  //             Phone: { type: GraphQLString },
+  //             Age: { type: GraphQLInt },
+  //             Provider: {
+  //               type: new GraphQLEnumType({
+  //                 name: "UserProvider",
+  //                 values: {
+  //                   Google: { value: UserProvider.Google },
+  //                   System: { value: UserProvider.System },
+  //                 },
+  //               }),
+  //             },
+  //             Role: {
+  //               type: new GraphQLEnumType({
+  //                 name: "UserRole",
+  //                 values: {
+  //                   Admin: { value: UserRole.Admin },
+  //                   User: { value: UserRole.User },
+  //                 },
+  //               }),
+  //             },
+  //             Friends: { type: new GraphQLList(GraphQLString) },
+  //             ProfilePic: { type: GraphQLString },
+  //             CoverPics: { type: new GraphQLList(GraphQLString) },
+  //             ChangeCreditTime: { type: GraphQLString },
+  //             ConfirmEmail: { type: GraphQLBoolean },
+  //             DeletedAt: { type: GraphQLString },
+  //           },
+  //         }),
+
+  //         resolve: async() => {
+  //          const user = await UserDbrepo.findOne({})
+
+  //           return user;
+  //         },
+  //         description: "test 1",
+  //       },
+  //       helloWorld2: {
+  //         type: GraphQLString,
+  //         args: {
+  //           word: { type: new GraphQLNonNull(GraphQLString) },
+  //         },
+  //         resolve: () => {
+  //           return "hellow World";
+  //         },
+  //         description: "test 2",
+  //       },
+  //     },
+  //   }),
+  // });
+  App.all(
+    "/graphql",
+    authentication(),
+    createHandler({
+      schema: schema,
+      context: (req) => ({ User: req.raw.user, TokenPayLoad: req.raw.payLoad }),
+    }),
+  );
+  ///
   App.get(
     "/*dummy",
     (

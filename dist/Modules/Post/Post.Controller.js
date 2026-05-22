@@ -1,12 +1,25 @@
 import express, {} from "express";
 import { validation } from "../../MiddleWares/ValidationMiddleWare.js";
-import { CreatePostValidation } from "./Post.Validation.js";
+import { CreatePostValidation, FindPostsSchema, LikeDisLikeSchema, UpdatePostValidation, } from "./Post.Validation.js";
 import CloudFileUpload from "../../Common/Multer/Multer.Config.js";
 import SuccessResponse from "../../Common/Response/SuccessResponse.js";
 import PostService from "./Post.Service.js";
+import { authentication } from "../../MiddleWares/AuthenticationMiddelWare.js";
 const PostRouter = express.Router();
-PostRouter.post("/CreatePost", CloudFileUpload({}).array("Attchments", 5), validation(CreatePostValidation), async (req, res) => {
-    const result = await PostService.CreatePost(req.body);
+PostRouter.patch("/UpdatePost/:postId", authentication(), CloudFileUpload({}).array("Attchments", 5), validation(UpdatePostValidation), async (req, res) => {
+    const result = await PostService.UpdatePost(req.body, req.params.postId, req.user._id, req.files);
+    return SuccessResponse({ res, Msg: "Done", data: result });
+});
+PostRouter.post("/CreatePost", authentication(), CloudFileUpload({}).array("Attchments", 5), validation(CreatePostValidation), async (req, res) => {
+    const result = await PostService.CreatePost(req.body, req.user._id, req.files);
+    return SuccessResponse({ res, Msg: "Done", data: result });
+});
+PostRouter.post("/GetPosts", authentication(), validation(FindPostsSchema), async (req, res) => {
+    const result = await PostService.FindPosts(req.user, req.query);
+    return SuccessResponse({ res, Msg: "Done", data: result });
+});
+PostRouter.post("/ReactPost/:postId", authentication(), validation(LikeDisLikeSchema), async (req, res) => {
+    const result = await PostService.LikeAndDislikePost(req.params.postId, req.user, req.query.react);
     return SuccessResponse({ res, Msg: "Done", data: result });
 });
 export default PostRouter;

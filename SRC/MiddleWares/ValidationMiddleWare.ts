@@ -1,9 +1,13 @@
 import type { NextFunction, Request, Response } from "express";
-import { BadRequestExeption } from "../Common/Exeptions/DomainExeption.js";
+import {
+  BadRequestExeption,
+  MapGQLError,
+} from "../Common/Exeptions/DomainExeption.js";
 import { regex, z, type ZodType } from "zod";
 import { UserGender } from "../Common/Enums/User.Enums.js";
 import { error } from "console";
 import { fa } from "zod/locales";
+import { Types } from "mongoose";
 
 type KeyReqType = keyof Request; //=>body |params|file|..........
 export function validation(
@@ -55,6 +59,9 @@ export function validation(
 }
 
 export const CommonValidationFeilds = {
+  id: z.string().refine((value) => {
+    return Types.ObjectId.isValid(value);
+  }, "Invalid ObjectId"),
   UserName: z.string().min(3, { error: "TooSmall" }).max(100),
   Email: z.email(),
   Password: z.string().regex(/^[A-Z]{1}[a-z]{1,24}\s[A-Z]{1}[a-z]{1,24}/),
@@ -89,3 +96,23 @@ export const CommonValidationFeilds = {
 //      if (ValidationScema[Key] == undefined) {
 //     continue;
 //   }
+
+export function validationGQL<T = any>(ValidationScema: ZodType, value: T) {
+  const ValidationResult = ValidationScema!.safeParse(value);
+  if (!ValidationResult.success) {
+    MapGQLError(
+      new BadRequestExeption(
+        "Validation Err",
+        ValidationResult.error.issues.map((ele) => {
+          // [[]] - []
+          return { path: ele.path, message: ele.message };
+        }),
+      ),
+    );
+    // ValidationErrs.push(
+    //   JSON.parse(ValidationResult.error.message).map((ele) => {
+    //     return { path: ele.path, Message: ele.message };
+    //   }),
+    // ); zod already having errorPurse
+  }
+}

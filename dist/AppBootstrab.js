@@ -12,6 +12,13 @@ import { pipeline } from "node:stream";
 import { promisify } from "node:util";
 import SuccessResponse from "./Common/Response/SuccessResponse.js";
 import PostRouter from "./Modules/Post/Post.Controller.js";
+import CommentRouter from "./Modules/Comment/Comment.Controller.js";
+import { GraphQLBoolean, GraphQLEnumType, GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString, } from "graphql";
+import { createHandler } from "graphql-http/lib/use/express";
+import { UserGender, UserProvider, UserRole, } from "./Common/Enums/User.Enums.js";
+import UserDbrepo from "./DB/DB.Reposatory.js/User.Dbrepo.js";
+import schema from "./Modules/gql/schema.gql.js";
+import { authentication } from "./MiddleWares/AuthenticationMiddelWare.js";
 async function AppBoostrab() {
     const PORT = Server_PORT;
     const App = express();
@@ -21,6 +28,7 @@ async function AppBoostrab() {
     App.use("/Auth", AuthRouter);
     App.use("/User", UserRouter);
     App.use("/Post", PostRouter);
+    App.use("/Comment", CommentRouter);
     App.get("/uploads/*path", async (req, res, next) => {
         const { path } = req.params;
         const { fileName, downLoad } = req.query;
@@ -49,6 +57,10 @@ async function AppBoostrab() {
     App.post("/sendNotification", async (req, res) => {
         return res.json({ body: req.body });
     });
+    App.all("/graphql", authentication(), createHandler({
+        schema: schema,
+        context: (req) => ({ User: req.raw.user, TokenPayLoad: req.raw.payLoad }),
+    }));
     App.get("/*dummy", (req, res, next) => {
         res.status(404).json({ Msg: "Invalid Url Or Method" });
     });
