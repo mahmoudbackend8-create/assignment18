@@ -6,19 +6,20 @@ import TestDBConnection from "./DB/DB.Connection.js";
 import { TestConnectionRedis } from "./DB/Redis/Redis.Connection.js";
 import UserRouter from "./Modules/User/User.Control.js";
 import cors from "cors";
-import UserModel from "./DB/Models/UserModel.js";
 import S3BucketService from "./Common/S3Bucket/S3BucketService.js";
 import { pipeline } from "node:stream";
 import { promisify } from "node:util";
 import SuccessResponse from "./Common/Response/SuccessResponse.js";
 import PostRouter from "./Modules/Post/Post.Controller.js";
 import CommentRouter from "./Modules/Comment/Comment.Controller.js";
-import { GraphQLBoolean, GraphQLEnumType, GraphQLID, GraphQLInt, GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString, } from "graphql";
 import { createHandler } from "graphql-http/lib/use/express";
-import { UserGender, UserProvider, UserRole, } from "./Common/Enums/User.Enums.js";
-import UserDbrepo from "./DB/DB.Reposatory.js/User.Dbrepo.js";
 import schema from "./Modules/gql/schema.gql.js";
 import { authentication } from "./MiddleWares/AuthenticationMiddelWare.js";
+import { Server, Socket } from "socket.io";
+import TokenService from "./Common/Security/TokenService.js";
+import z from "zod";
+import { validationRealTime } from "./MiddleWares/ValidationMiddleWare.js";
+import RealTimeGateWay from "./Modules/RealTime/RealTime.GateWay.js";
 async function AppBoostrab() {
     const PORT = Server_PORT;
     const App = express();
@@ -65,8 +66,9 @@ async function AppBoostrab() {
         res.status(404).json({ Msg: "Invalid Url Or Method" });
     });
     App.use(GlobalErrHandling);
-    App.listen(3000, () => {
+    const server = App.listen(3000, () => {
         console.log("port is runing on prot 3000");
     });
+    RealTimeGateWay.initializeIo(server);
 }
 export default AppBoostrab;

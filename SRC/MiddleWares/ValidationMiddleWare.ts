@@ -116,3 +116,24 @@ export function validationGQL<T = any>(ValidationScema: ZodType, value: T) {
     // ); zod already having errorPurse
   }
 }
+export function validationRealTime<T = any>(
+  ValidationScema: ZodType,
+  value: T,
+) {
+  const ValidationResult = ValidationScema!.safeParse(value);
+  if (!ValidationResult.success) {
+    throw new BadRequestExeption(
+      "Validation Err",
+      ValidationResult.error.issues.map((ele) => {
+        // [[]] - []
+        return { path: ele.path, message: ele.message };
+      }),
+    );
+
+    // ValidationErrs.push(
+    //   JSON.parse(ValidationResult.error.message).map((ele) => {
+    //     return { path: ele.path, Message: ele.message };
+    //   }),
+    // ); zod already having errorPurse
+  }
+}

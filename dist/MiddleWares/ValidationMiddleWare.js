@@ -45,3 +45,11 @@ export function validationGQL(ValidationScema, value) {
         })));
     }
 }
+export function validationRealTime(ValidationScema, value) {
+    const ValidationResult = ValidationScema.safeParse(value);
+    if (!ValidationResult.success) {
+        throw new BadRequestExeption("Validation Err", ValidationResult.error.issues.map((ele) => {
+            return { path: ele.path, message: ele.message };
+        }));
+    }
+}

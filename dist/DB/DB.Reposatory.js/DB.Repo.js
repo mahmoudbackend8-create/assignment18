@@ -32,5 +32,7 @@ class DBRepo {
         const TotalDocs = await this.Model.countDocuments(filter);
         return { Docs, TotalDocs, Page, TotalPages: Math.ceil(TotalDocs / Limit) };
     }
+    async saveDBDoc() {
+    }
 }
 export default DBRepo;
